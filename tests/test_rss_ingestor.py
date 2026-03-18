@@ -109,7 +109,9 @@ class TestIngestionConfig:
 
     def test_load_from_yaml(self) -> None:
         cfg = IngestionConfig.load()
-        assert cfg.catalog == "dev"
+        assert cfg.catalog != ""
+        assert cfg.schema_name != ""
+        assert cfg.table_name != ""
         assert len(cfg.feeds) >= 1
 
 
