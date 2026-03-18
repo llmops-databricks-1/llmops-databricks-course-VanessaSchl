@@ -1,7 +1,7 @@
 resources:
   jobs:
-    hello_world_job:
-      name: hello-world
+    ingest_release_notes_job:
+      name: ingest-release-notes
       tags:
         project_name: "llmops-databricks-course-VanessaSchl"
 
@@ -13,11 +13,7 @@ resources:
               - ../dist/*.whl
 
       tasks:
-        - task_key: hello_world
+        - task_key: ingest_release_notes
           environment_key: default
-          notebook_task:
-            notebook_path: ../notebooks/hello_world.py
-            base_parameters:
-              env: ${bundle.target}
-              git_sha: "${var.git_sha}"
-              run_id: "{{job.run_id}}"
+          spark_python_task:
+            python_file: ../notebooks/ingest_release_notes.py
