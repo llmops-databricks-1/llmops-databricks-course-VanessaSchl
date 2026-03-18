@@ -1,5 +1,5 @@
 bundle:
-  name: llmops-databricks-course-VanessaSchl
+  name: llmops-databricks
 
 include:
   - resources/*.yml
@@ -20,5 +20,5 @@ targets:
     mode: development
     default: true
     workspace:
-      host: https://<your-databricks-workspace>
+      host: https://adb-7405606604997997.17.azuredatabricks.net/
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

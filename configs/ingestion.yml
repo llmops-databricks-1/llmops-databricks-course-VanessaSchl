@@ -1,0 +1,16 @@
+# Ingestion pipeline configuration
+# Edit values here instead of passing CLI arguments.
+
+catalog: "test_vanessa_schlotzig"
+schema_name: "llmops"
+table_name: "databricks_feed_items"
+
+env: "dev"
+git_sha: ""
+run_id: ""
+
+feeds:
+  - url: "https://learn.microsoft.com/en-us/azure/databricks/feed.xml"
+    source_label: "release_notes"
+  - url: "https://www.databricks.com/rss.xml"
+    source_label: "blog"
