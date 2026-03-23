@@ -1,5 +1,5 @@
 [project]
-name = "llmops-databricks-course-VanessaSchl"
+name = "databricks-docs"
 dynamic = ["version"]
 description = "llmops-databricks-course-VanessaSchl - LLMOps Course on Databricks"
 requires-python = ">=3.12, <3.13"
@@ -23,7 +23,8 @@ dependencies = [
     "databricks-agents==1.8.2",
     "psycopg==3.3.2",
     "psycopg-pool==3.3.0",
-    "psycopg[binary]==3.3.2"
+    "psycopg[binary]==3.3.2",
+    "feedparser==6.0.11",
 ]
 
 [project.optional-dependencies]
@@ -36,19 +37,13 @@ dev = ["databricks-connect>=17.0, <18",
 ci = ["pre-commit>=4.1.0, <5",
       "pytest>=8.3.4, <9"]
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.package-data]
-"your_custom_package" = ["../../../project_config.yml"]
-
 [build-system]
 requires = ["setuptools>=72.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["your_custom_package*"]
+include = ["databricks_docs*"]
 
 [tool.setuptools.dynamic]
 version = { file = "version.txt" }
@@ -58,10 +53,14 @@ addopts = "-s --no-header --no-summary"
 testpaths = ["tests"]
 pythonpath = ["."]
 
+# ============================================================================
+# Ruff Configuration
+# ============================================================================
+
 [tool.ruff]
 line-length = 90
 
-select = [
+lint.select = [
     "F",    # pyflakes rules
     "E",    # pycodestyle error rules
     "W",    # pycodestyle warning rules
@@ -74,16 +73,45 @@ select = [
     "ANN"   # flake8-annotations rules
 ]
 
-ignore = [
+lint.ignore = [
     "D107",   # Missing docstring in `__init__`
     "D203",   # incorrect-blank-line-before-class
     "D213",   # multi-line-summary-second-line
     "C901",   # too complex
     "ERA001", # commented out code
-    "ANN204",
-    "ANN102",
-    "ANN101"
+    "ANN204"
 ]
 
 [tool.ruff.format]
 indent-style = "space"
+
+# ============================================================================
+# mypy Configuration
+# ============================================================================
+
+[tool.mypy]
+python_version = "3.12"
+
+# Plugins
+plugins = ["pydantic.mypy"]
+
+# Pydantic plugin settings (optional but recommended)
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_decorators = false
+
+strict = true
+exclude = [
+    "^.azdo/",
+    "^.venv/",
+    "^resources/",
+]
+
+[[tool.mypy.overrides]]
+module = "sklearn.*"
+ignore_missing_imports = true
