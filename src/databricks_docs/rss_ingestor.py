@@ -1,8 +1,9 @@
-"""RSS feed ingestion for Databricks release notes and blog posts."""
+"""RSS feed ingestion for Databricks blog posts."""
 
 from __future__ import annotations
 
 import datetime
+import hashlib
 from pathlib import Path
 
 import feedparser
@@ -77,10 +78,14 @@ class RSSIngestor:
 
         items: list[FeedItem] = []
         for entry in feed.entries:
+            link = entry.get("link", "")
+            guid = hashlib.sha256(
+                f"{source_label}:{link}".encode(),
+            ).hexdigest()
             item = FeedItem(
-                guid=entry.get("id", entry.get("link", "")),
+                guid=guid,
                 title=entry.get("title", "").strip(),
-                link=entry.get("link", ""),
+                link=link,
                 pub_date=parse_pub_date(entry),
                 description=strip_html(
                     entry.get("summary", entry.get("description", "")),

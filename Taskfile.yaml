@@ -1,0 +1,24 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  precommit:
+    desc: Run pre-commit hooks
+    cmds:
+      - pre-commit run --all-files
+
+  test:
+    desc: Run tests
+    cmds:
+      - uv run pytest tests/
+
+  ingest:
+    desc: Run the ingestion pipeline
+    cmds:
+      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/ingest_feeds.py
+
+  crawl:
+    desc: Run the crawling pipeline
+    cmds:
+      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/crawl_pages.py

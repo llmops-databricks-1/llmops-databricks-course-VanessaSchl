@@ -1,7 +1,7 @@
 resources:
   jobs:
-    ingest_release_notes_job:
-      name: ingest-release-notes
+    crawl_pages_job:
+      name: crawl-pages
       tags:
         project_name: "llmops-databricks-course-VanessaSchl"
 
@@ -13,7 +13,7 @@ resources:
               - ../dist/*.whl
 
       tasks:
-        - task_key: ingest_release_notes
+        - task_key: crawl_pages
           environment_key: default
           spark_python_task:
-            python_file: ../notebooks/ingest_release_notes.py
+            python_file: ../notebooks/crawl_pages.py

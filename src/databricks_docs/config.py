@@ -7,9 +7,6 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, Field, model_validator
 
-# Default path to the config file, relative to the project root.
-_DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs" / "ingestion.yml"
-
 
 class FeedConfig(BaseModel):
     """Configuration for a single RSS feed source."""
@@ -21,9 +18,7 @@ class FeedConfig(BaseModel):
 class IngestionConfig(BaseModel):
     """Configuration for the RSS feed ingestion pipeline.
 
-    Load from the YAML file in ``configs/ingestion.yml`` via
-    ``IngestionConfig.load()``.  All parameters that previously
-    required CLI arguments are now read from that file.
+    Load from a YAML file via ``IngestionConfig.load()``.
     """
 
     catalog: str = Field(
@@ -50,12 +45,16 @@ class IngestionConfig(BaseModel):
         default="",
         description="Databricks job run ID",
     )
+    volume_name: str = Field(
+        default="raw_pages",
+        description="Unity Catalog Volume name for crawled pages",
+    )
+    crawl_delay_seconds: float = Field(
+        default=1.5,
+        description="Delay in seconds between HTTP requests when crawling",
+    )
     feeds: list[FeedConfig] = Field(
         default_factory=lambda: [
-            FeedConfig(
-                url="https://learn.microsoft.com/en-us/azure/databricks/feed.xml",
-                source_label="release_notes",
-            ),
             FeedConfig(
                 url="https://www.databricks.com/rss.xml",
                 source_label="blog",
@@ -72,6 +71,11 @@ class IngestionConfig(BaseModel):
     def full_table_name(self) -> str:
         """Return the fully qualified Delta table name."""
         return f"{self.catalog}.{self.schema_name}.{self.table_name}"
+
+    @property
+    def volume_base_path(self) -> str:
+        """Return the Volumes path for crawled pages."""
+        return f"/Volumes/{self.catalog}/{self.schema_name}/{self.volume_name}"
 
     # ------------------------------------------------------------------
     # Validators
@@ -91,16 +95,15 @@ class IngestionConfig(BaseModel):
     # ------------------------------------------------------------------
 
     @classmethod
-    def load(cls, path: str | Path | None = None) -> IngestionConfig:
+    def load(cls, path: str | Path) -> IngestionConfig:
         """Load configuration from a YAML file.
 
         Parameters
         ----------
         path
-            Path to the YAML config file.  Defaults to
-            ``<project_root>/configs/ingestion.yml``.
+            Path to the YAML config file.
         """
-        config_path = Path(path) if path else _DEFAULT_CONFIG_PATH
+        config_path = Path(path)
         with open(config_path) as fh:
             data = yaml.safe_load(fh)
         return cls(**data)

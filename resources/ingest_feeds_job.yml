@@ -1,0 +1,19 @@
+resources:
+  jobs:
+    ingest_feeds_job:
+      name: ingest-feeds
+      tags:
+        project_name: "llmops-databricks-course-VanessaSchl"
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+
+      tasks:
+        - task_key: ingest_feeds
+          environment_key: default
+          spark_python_task:
+            python_file: ../notebooks/ingest_feeds.py

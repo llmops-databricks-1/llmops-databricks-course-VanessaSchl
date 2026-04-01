@@ -1,12 +1,19 @@
 """Tests for config, utils, and the RSSIngestor class."""
 
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
 from databricks_docs.config import FeedConfig, IngestionConfig
 from databricks_docs.rss_ingestor import FeedItem, RSSIngestor
 from databricks_docs.utils import FEED_SCHEMA, strip_html
+
+# ---------------------------------------------------------------------------
+# Config helpers
+# ---------------------------------------------------------------------------
+
+CONFIG_PATH = Path(__file__).resolve().parent.parent / "configs" / "ingestion.yml"
 
 # ---------------------------------------------------------------------------
 # strip_html tests
@@ -57,7 +64,7 @@ class TestIngestionConfig:
         assert cfg.table_name == "databricks_feed_items"
         assert cfg.env == "dev"
         assert cfg.full_table_name == "dev.llmops.databricks_feed_items"
-        assert len(cfg.feeds) == 2
+        assert len(cfg.feeds) == 1
 
     def test_custom_values(self) -> None:
         cfg = IngestionConfig(
@@ -102,13 +109,12 @@ class TestIngestionConfig:
     def test_default_feeds_have_correct_urls(self) -> None:
         cfg = IngestionConfig()
         labels = {f.source_label for f in cfg.feeds}
-        assert labels == {"release_notes", "blog"}
+        assert labels == {"blog"}
         urls = {f.url for f in cfg.feeds}
-        assert any("learn.microsoft.com" in u for u in urls)
         assert any("databricks.com" in u for u in urls)
 
     def test_load_from_yaml(self) -> None:
-        cfg = IngestionConfig.load()
+        cfg = IngestionConfig.load(path=CONFIG_PATH)
         assert cfg.catalog != ""
         assert cfg.schema_name != ""
         assert cfg.table_name != ""
@@ -221,31 +227,17 @@ class TestFilterNewItems:
 class TestFetchFeedLive:
     """Integration tests that hit the actual RSS feeds."""
 
-    def test_release_notes_feed(self) -> None:
-        ingestor = RSSIngestor()
-        release_feed = next(
-            f for f in ingestor.config.feeds if f.source_label == "release_notes"
-        )
-        items = ingestor.fetch_feed(
-            release_feed.url,
-            release_feed.source_label,
-        )
-        assert len(items) > 0
-        first = items[0]
-        assert first.source == "release_notes"
-        assert first.guid
-        assert first.title
-        assert first.link.startswith("https://")
-        assert isinstance(first.pub_date, datetime)
-
     def test_blog_feed(self) -> None:
-        ingestor = RSSIngestor()
+        ingestor = RSSIngestor(config_path=CONFIG_PATH)
         blog_feed = next(f for f in ingestor.config.feeds if f.source_label == "blog")
         items = ingestor.fetch_feed(blog_feed.url, blog_feed.source_label)
         assert len(items) > 0
         first = items[0]
         assert first.source == "blog"
         assert first.link.startswith("https://")
+        # guid must differ from link (hash-based)
+        assert first.guid != first.link
+        assert len(first.guid) == 64  # SHA-256 hex digest
 
 
 # ---------------------------------------------------------------------------
@@ -273,5 +265,5 @@ class TestDeltaUtils:
 
     def test_rss_ingestor_run_is_callable(self) -> None:
         """Smoke test: RSSIngestor.run is callable."""
-        ingestor = RSSIngestor()
+        ingestor = RSSIngestor(config_path=CONFIG_PATH)
         assert callable(ingestor.run)
