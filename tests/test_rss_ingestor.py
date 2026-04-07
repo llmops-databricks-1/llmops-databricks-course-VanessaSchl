@@ -62,7 +62,6 @@ class TestIngestionConfig:
         assert cfg.catalog == "dev"
         assert cfg.schema_name == "llmops"
         assert cfg.table_name == "databricks_feed_items"
-        assert cfg.env == "dev"
         assert cfg.full_table_name == "dev.llmops.databricks_feed_items"
         assert len(cfg.feeds) == 1
 
@@ -71,13 +70,8 @@ class TestIngestionConfig:
             catalog="prod",
             schema_name="analytics",
             table_name="feed_data",
-            env="prod",
-            git_sha="abc123",
-            run_id="42",
         )
         assert cfg.full_table_name == "prod.analytics.feed_data"
-        assert cfg.git_sha == "abc123"
-        assert cfg.run_id == "42"
 
     def test_custom_feeds(self) -> None:
         cfg = IngestionConfig(

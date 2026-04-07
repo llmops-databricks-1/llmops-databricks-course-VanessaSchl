@@ -4,12 +4,18 @@ catalog: "swkzdm_core_skwag_central_test_vanessa_schlotzig"
 schema_name: "llmops"
 table_name: "databricks_feed_items"
 
-env: "dev"
-git_sha: ""
-run_id: ""
+budget_policy_id: "6af33e73-6bce-35d6-83b4-43a238aea5c7"
 
 volume_name: "raw_pages"
 crawl_delay_seconds: 1.5
+
+# Embedding & Vector Search
+chunks_table_name: "page_chunks"
+embedding_model: "databricks-gte-large-en"
+chunk_size: 1000
+chunk_overlap: 200
+vector_search_endpoint_name: "llmops_vs_endpoint"
+vector_search_index_suffix: "page_chunks_index"
 
 feeds:
   - url: "https://www.databricks.com/rss.xml"

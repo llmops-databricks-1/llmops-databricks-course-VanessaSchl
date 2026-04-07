@@ -24,6 +24,7 @@ dependencies = [
     "pydantic==2.11.7",
     "python-dotenv==1.1.1",
     "trafilatura==2.0.0",
+    "langchain-text-splitters>=1.1.1",
 ]
 
 [project.optional-dependencies]
@@ -114,6 +115,10 @@ exclude = [
     "^.venv/",
     "^resources/",
 ]
+
+[[tool.mypy.overrides]]
+module = "databricks.vector_search.*"
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "databricks_docs.*"

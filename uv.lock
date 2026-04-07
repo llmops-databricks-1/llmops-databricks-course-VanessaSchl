@@ -493,6 +493,7 @@ dependencies = [
     { name = "databricks-sdk" },
     { name = "databricks-vectorsearch" },
     { name = "feedparser" },
+    { name = "langchain-text-splitters" },
     { name = "loguru" },
     { name = "mlflow" },
     { name = "nest-asyncio" },
@@ -531,6 +532,7 @@ requires-dist = [
     { name = "databricks-sdk", specifier = "==0.102.0" },
     { name = "databricks-vectorsearch", specifier = "==0.66" },
     { name = "feedparser", specifier = "==6.0.11" },
+    { name = "langchain-text-splitters", specifier = ">=1.1.1" },
     { name = "loguru", specifier = "==0.7.3" },
     { name = "mlflow", specifier = "==3.10.1" },
     { name = "nest-asyncio", specifier = "==1.6.0" },
@@ -1347,6 +1349,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/49/ae/1dbeb49ab8f098f78ec52e21627e705e5d7c684dc8826c2c34cc2746233a/langchain_openai-1.1.9.tar.gz", hash = "sha256:fdee25dcf4b0685d8e2f59856f4d5405431ef9e04ab53afe19e2e8360fed8234", size = 1004828, upload-time = "2026-02-10T21:03:21.615Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/52/a1/8a20d19f69d022c10d34afa42d972cc50f971b880d0eb4a828cf3dd824a8/langchain_openai-1.1.9-py3-none-any.whl", hash = "sha256:ca2482b136c45fb67c0db84a9817de675e0eb8fb2203a33914c1b7a96f273940", size = 85769, upload-time = "2026-02-10T21:03:20.333Z" },
+]
+
+[[package]]
+name = "langchain-text-splitters"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langchain-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/85/38/14121ead61e0e75f79c3a35e5148ac7c2fe754a55f76eab3eed573269524/langchain_text_splitters-1.1.1.tar.gz", hash = "sha256:34861abe7c07d9e49d4dc852d0129e26b32738b60a74486853ec9b6d6a8e01d2", size = 279352, upload-time = "2026-02-18T23:02:42.798Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/66/d9e0c3b83b0ad75ee746c51ba347cacecb8d656b96e1d513f3e334d1ccab/langchain_text_splitters-1.1.1-py3-none-any.whl", hash = "sha256:5ed0d7bf314ba925041e7d7d17cd8b10f688300d5415fb26c29442f061e329dc", size = 35734, upload-time = "2026-02-18T23:02:41.913Z" },
 ]
 
 [[package]]

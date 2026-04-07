@@ -95,9 +95,27 @@ class PageCrawler:
     # Volume I/O
     # ------------------------------------------------------------------
 
-    @staticmethod
+    def clean_name(self, name: str) -> str:
+        """Clean *name* to be safe for file paths.
+
+        Removes or replaces characters that are problematic in file paths.
+
+        Example transformations:
+        - "My Article Title!" -> "my_article_title"
+        """
+        return (
+            name.lower()
+            .replace("/", "_")
+            .replace("&", "")
+            .replace("?", "")
+            .replace(":", "")
+            .replace(" ", "_")
+        )
+
     def save_to_volume(
-        workspace_client: WorkspaceClient,
+        self,
+        local: bool,
+        workspace_client: WorkspaceClient | None,
         volume_base_path: str,
         title: str,
         source: str,
@@ -105,28 +123,28 @@ class PageCrawler:
     ) -> str:
         """Write *text* to a file inside the Volume and return the path.
 
-        Directory structure::
+        Directory structure:
 
             {volume_base_path}/{source}/{file_name}.txt
         """
 
         file_path = f"{volume_base_path}/{source}"
-        title_clean = (
-            title.lower()
-            .replace("/", "_")
-            .replace("&", "")
-            .replace("?", "")
-            .replace(":", "")
-            .replace(" ", "_")
-        )
+        title_clean = self.clean_name(title)
         file_name = f"{title_clean}.txt"
 
-        workspace_client.files.create_directory(file_path)
-        workspace_client.files.upload(
-            file_path=f"{file_path}/{file_name}",
-            contents=io.BytesIO(text.encode("utf-8")),
-            overwrite=True,
-        )
+        if local:
+            assert isinstance(workspace_client, WorkspaceClient)
+            workspace_client.files.create_directory(file_path)
+            workspace_client.files.upload(
+                file_path=f"{file_path}/{file_name}",
+                contents=io.BytesIO(text.encode("utf-8")),
+                overwrite=True,
+            )
+        else:
+            # Local mode for testing: write to local filesystem instead of Volume.
+            Path(file_path).mkdir(parents=True, exist_ok=True)
+            with open(f"{file_path}/{file_name}", "w", encoding="utf-8") as f:
+                f.write(text)
         logger.debug("Saved {} bytes to {}", len(text), file_path)
         return f"{file_path}/{file_name}"
 
@@ -153,7 +171,9 @@ class PageCrawler:
     # Orchestration
     # ------------------------------------------------------------------
 
-    def run(self, spark: SparkSession, workspace_client: WorkspaceClient) -> int:
+    def run(
+        self, local: bool, spark: SparkSession, workspace_client: WorkspaceClient | None
+    ) -> int:
         """Execute the full crawl pipeline.
 
         1. Query unprocessed rows.
@@ -193,6 +213,7 @@ class PageCrawler:
                 continue
 
             volume_path = self.save_to_volume(
+                local=local,
                 workspace_client=workspace_client,
                 volume_base_path=self.config.volume_base_path,
                 title=title,
