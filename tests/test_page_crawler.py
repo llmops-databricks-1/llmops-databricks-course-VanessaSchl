@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from databricks.sdk import WorkspaceClient
+
 from databricks_docs.config import IngestionConfig
 from databricks_docs.page_crawler import PageCrawler
 
@@ -45,8 +47,10 @@ class TestSaveToVolume:
     """Tests for writing extracted text to file."""
 
     def test_creates_directory_and_file(self) -> None:
-        mock_workspace_client = MagicMock()
-        path = PageCrawler.save_to_volume(
+        mock_workspace_client = MagicMock(spec=WorkspaceClient)
+        page_crawler = PageCrawler(config_path=CONFIG_PATH)
+        path = page_crawler.save_to_volume(
+            local=True,
             workspace_client=mock_workspace_client,
             volume_base_path="/Volumes/my_cat/my_schema/pages",
             title="release_notes",
@@ -56,8 +60,10 @@ class TestSaveToVolume:
         assert path == "/Volumes/my_cat/my_schema/pages/item-1/release_notes.txt"
 
     def test_sanitises_title(self) -> None:
-        mock_workspace_client = MagicMock()
-        path = PageCrawler.save_to_volume(
+        mock_workspace_client = MagicMock(spec=WorkspaceClient)
+        page_crawler = PageCrawler(config_path=CONFIG_PATH)
+        path = page_crawler.save_to_volume(
+            local=True,
             workspace_client=mock_workspace_client,
             volume_base_path="/Volumes/my_cat/my_schema/pages",
             title="My Blog Post: Version 1.0?",
@@ -181,7 +187,7 @@ class TestRun:
         mock_sleep: MagicMock,
     ) -> None:
         mock_spark = MagicMock()
-        mock_workspace_client = MagicMock()
+        mock_workspace_client = MagicMock(spec=WorkspaceClient)
         mock_get.return_value = [
             {"guid": "g1", "link": "https://a.com", "title": "Title 1", "source": "blog"},
         ]
@@ -190,7 +196,9 @@ class TestRun:
 
         crawler = PageCrawler(config_path=CONFIG_PATH)
         crawler.config.crawl_delay_seconds = 0  # fast tests
-        count = crawler.run(spark=mock_spark, workspace_client=mock_workspace_client)
+        count = crawler.run(
+            local=True, spark=mock_spark, workspace_client=mock_workspace_client
+        )
 
         assert count == 1
         mock_crawl.assert_called_once_with("https://a.com")
@@ -203,11 +211,13 @@ class TestRun:
         mock_get: MagicMock,
     ) -> None:
         mock_spark = MagicMock()
-        mock_workspace_client = MagicMock()
+        mock_workspace_client = MagicMock(spec=WorkspaceClient)
         mock_get.return_value = []
 
         crawler = PageCrawler(config_path=CONFIG_PATH)
-        count = crawler.run(spark=mock_spark, workspace_client=mock_workspace_client)
+        count = crawler.run(
+            local=True, spark=mock_spark, workspace_client=mock_workspace_client
+        )
         assert count == 0
 
     @patch("databricks_docs.page_crawler.time.sleep")
@@ -220,7 +230,7 @@ class TestRun:
         mock_sleep: MagicMock,
     ) -> None:
         mock_spark = MagicMock()
-        mock_workspace_client = MagicMock()
+        mock_workspace_client = MagicMock(spec=WorkspaceClient)
         mock_get.return_value = [
             {
                 "guid": "g1",
@@ -240,7 +250,9 @@ class TestRun:
 
         crawler = PageCrawler(config_path=CONFIG_PATH)
         crawler.config.crawl_delay_seconds = 0
-        count = crawler.run(spark=mock_spark, workspace_client=mock_workspace_client)
+        count = crawler.run(
+            local=True, spark=mock_spark, workspace_client=mock_workspace_client
+        )
 
         assert count == 0
         assert mock_crawl.call_count == 2

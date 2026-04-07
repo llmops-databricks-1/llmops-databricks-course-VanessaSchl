@@ -33,17 +33,9 @@ class IngestionConfig(BaseModel):
         default="databricks_feed_items",
         description="Delta table name for feed items",
     )
-    env: str = Field(
-        default="dev",
-        description="Deployment environment (dev / acc / prd)",
-    )
-    git_sha: str = Field(
-        default="",
-        description="Git commit SHA for lineage",
-    )
-    run_id: str = Field(
-        default="",
-        description="Databricks job run ID",
+    budget_policy_id: str = Field(
+        default="6af33e73-6bce-35d6-83b4-43a238aea5c7",
+        description="Databricks budget policy ID for cost tracking",
     )
     volume_name: str = Field(
         default="raw_pages",
@@ -52,6 +44,30 @@ class IngestionConfig(BaseModel):
     crawl_delay_seconds: float = Field(
         default=1.5,
         description="Delay in seconds between HTTP requests when crawling",
+    )
+    chunks_table_name: str = Field(
+        default="page_chunks",
+        description="Delta table name for text chunks with embeddings",
+    )
+    embedding_model: str = Field(
+        default="databricks-gte-large-en",
+        description="Foundation Model API model for embeddings",
+    )
+    chunk_size: int = Field(
+        default=1000,
+        description="Character count per text chunk",
+    )
+    chunk_overlap: int = Field(
+        default=200,
+        description="Character overlap between adjacent chunks",
+    )
+    vector_search_endpoint_name: str = Field(
+        default="llmops_vs_endpoint",
+        description="Databricks Vector Search endpoint name",
+    )
+    vector_search_index_suffix: str = Field(
+        default="page_chunks_index",
+        description="Vector Search index name (appended to catalog.schema)",
     )
     feeds: list[FeedConfig] = Field(
         default_factory=lambda: [
@@ -76,6 +92,16 @@ class IngestionConfig(BaseModel):
     def volume_base_path(self) -> str:
         """Return the Volumes path for crawled pages."""
         return f"/Volumes/{self.catalog}/{self.schema_name}/{self.volume_name}"
+
+    @property
+    def full_chunks_table_name(self) -> str:
+        """Return the fully qualified chunks table name."""
+        return f"{self.catalog}.{self.schema_name}.{self.chunks_table_name}"
+
+    @property
+    def full_index_name(self) -> str:
+        """Return the fully qualified Vector Search index name."""
+        return f"{self.catalog}.{self.schema_name}.{self.vector_search_index_suffix}"
 
     # ------------------------------------------------------------------
     # Validators

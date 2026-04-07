@@ -2,11 +2,15 @@
 
 version: "3"
 
+vars:
+  ROOT_PATH: ${pwd}
+
 tasks:
   precommit:
     desc: Run pre-commit hooks
     cmds:
       - pre-commit run --all-files
+      - task: test
 
   test:
     desc: Run tests
@@ -16,9 +20,19 @@ tasks:
   ingest:
     desc: Run the ingestion pipeline
     cmds:
-      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/ingest_feeds.py
+      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/01_ingest_feeds.py --root_path=$ROOT_PATH --config_path=configs/ingestion.yml
 
   crawl:
     desc: Run the crawling pipeline
     cmds:
-      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/crawl_pages.py
+      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/02_crawl_pages.py --root_path=$ROOT_PATH --config_path=configs/ingestion.yml
+
+  embed:
+    desc: Run the embedding pipeline
+    cmds:
+      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/03_embed_pages.py --root_path=$ROOT_PATH --config_path=configs/ingestion.yml
+
+  query:
+    desc: Query the vector search index
+    cmds:
+      - DATABRICKS_CONFIG_PROFILE=DEV uv run notebooks/03a_query_index.py --root_path=$ROOT_PATH --config_path=configs/ingestion.yml
